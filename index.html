@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerar PDF</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            margin: 20px;
+        }
+        form {
+            max-width: 800px; /* Ajustado para um tamanho mais adequado */
+            margin: auto;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold; /* Negrito */
+            font-size: 15px; /* Aumentar fonte em 2px */
+            text-align: left; /* Alinhar à esquerda */
+        }
+        input {
+            width: calc(100% - 20px); /* Ajustar a largura dos inputs para a largura do formulário */
+            padding: 5px;
+            font-size: 11px;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 11px;
+        }
+        .required:after {
+            content: "*";
+            color: red;
+            padding-left: 5px;
+        }
+        .question {
+            margin-bottom: 15px;
+        }
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toggle-group input[type="radio"] {
+            display: none; /* Oculta os botões de rádio reais */            
+        }
+        .toggle-label {
+            display: inline-block;
+            padding: 4px 8px; /* Diminuir o tamanho dos botões */
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #f9f9f9;
+            font-weight: normal; /* Remover negrito */
+            font-size: 12px; /* Ajustar tamanho da fonte */
+        }
+        .toggle-group input[type="radio"]:checked + .toggle-label {
+            background-color: #007bff;
+            color: #fff;
+            border-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <h2 style="text-align: center;">Gerar PDF de Experimento</h2>
+    <form id="experiment-form">
+        <label for="unidade" class="required">Unidade:</label>
+        <input type="text" id="unidade" value="Santa Bárbara d’Oeste" required><br>
+        
+        <label for="data" class="required">Data:</label>
+        <input type="date" id="data" required><br>
+        
+        <label for="curso" class="required">Curso:</label>
+        <input type="text" id="curso" value="Ciência da Computação" required><br>
+        
+        <label for="turno" class="required">Turno:</label>
+        <input type="text" id="turno" value="Noturno" required><br>
+        
+        <label for="disciplina" class="required">Disciplina:</label>
+        <input type="text" id="disciplina" required><br>
+        
+        <label for="professor" class="required">Professor:</label>
+        <input type="text" id="professor" value="Wilton Ruffato Wonrath" required><br>
+        
+        <label for="laboratorio" class="required">Laboratório:</label>
+        <select id="laboratorio" required onchange="atualizarCapacidade()">
+            <option value="">Selecione um laboratório</option>
+            <option value="Laboratório 1">Laboratório 1</option>
+            <option value="Laboratório 3">Laboratório 3</option>
+        </select><br>
+        
+        <label for="caplaboratorio" class="required">Capacidade Laboratório:</label>
+        <input type="text" id="caplaboratorio" readonly required><br><br>  
+
+        <label for="imageUpload">Upload de Lista de Presença:</label>
+        <input type="file" id="imageUpload" accept="image/*"><br><br>
+
+        <div class="question">
+            <label for="adequado">O número de alunos é adequado considerando a capacidade do laboratório?</label>
+            <div class="toggle-group">
+                <input type="radio" id="num-alunos" name="num-alunos" value="sim" checked>
+                <label for="adequado-sim" class="toggle-label">Sim</label>
+                <input type="radio" id="num-alunos" name="num-alunos" value="nao">
+                <label for="adequado-nao" class="toggle-label">Não</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <label for="eletronicos">Os alunos estavam utilizando em algum momento da aula prática aparelhos eletrônicos (celular, tablet, notebook)?</label>
+            <div class="toggle-group">
+                <input type="radio" id="alunos-eletronicos" name="alunos-eletronicos" value="sim">
+                <label for="eletronicos-sim" class="toggle-label">Sim</label>
+                <input type="radio" id="alunos-eletronicos" name="alunos-eletronicos" value="nao" checked>
+                <label for="eletronicos-nao" class="toggle-label">Não</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <label for="epis">Todos os alunos estavam utilizando os EPIs necessários para a execução da aula prática? (Ex: jaleco manga longa, sapato fechado, luvas, cabelo preso, máscaras e etc)</label>
+            <div class="toggle-group">
+                <input type="radio" id="epis" name="epis" value="sim" checked>
+                <label for="epis-sim" class="toggle-label">Sim</label>
+                <input type="radio" id="epis" name="epis" value="nao">
+                <label for="epis-nao" class="toggle-label">Não</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <label for="inicio-horario">A aula prática iniciou no horário correspondente ao agendamento realizado no sistema?</label>
+            <div class="toggle-group">
+                <input type="radio" id="inicio-horario" name="inicio-horario" value="sim" checked>
+                <label for="inicio-horario-sim" class="toggle-label">Sim</label>
+                <input type="radio" id="inicio-horario" name="inicio-horario" value="nao">
+                <label for="inicio-horario-nao" class="toggle-label">Não</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <label for="encerramento-horario">A aula prática encerrou no horário previsto?</label>
+            <div class="toggle-group">
+                <input type="radio" id="encerramento-horario" name="encerramento-horario" value="sim" checked>
+                <label for="encerramento-horario-sim" class="toggle-label">Sim</label>
+                <input type="radio" id="encerramento-horario" name="encerramento-horario" value="nao">
+                <label for="encerramento-horario-nao" class="toggle-label">Não</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <label for="intercorrencia">Houve alguma intercorrência durante a aula prática?</label>
+            <div class="toggle-group">
+                <input type="radio" id="intercorrencia" name="intercorrencia" value="sim">
+                <label for="intercorrencia-sim" class="toggle-label">Sim</label>
+                <input type="radio" id="intercorrencia" name="intercorrencia" value="nao" checked>
+                <label for="intercorrencia-nao" class="toggle-label">Não</label>
+            </div>
+        </div>
+
+        <div class="question">
+            <label for="preparacao">O responsável técnico higienizou e preparou com antecedência o laboratório com os equipamentos e insumos necessários para a realização da aula prática?</label>
+            <div class="toggle-group">
+                <input type="radio" id="preparacao" name="preparacao" value="sim" checked>
+                <label for="preparacao-sim" class="toggle-label">Sim</label>
+                <input type="radio" id="preparacao" name="preparacao" value="nao">
+                <label for="preparacao-nao" class="toggle-label">Não</label>
+            </div>
+        </div>
+
+        <!-- Adicionando textarea para Resumo, Desenvolvimento e Conclusão -->
+        <label for="resumo">Resumo do Experimento:</label><br>
+        <textarea id="resumo" name="resumo" rows="3" cols="100"></textarea><br><br>
+
+        <label for="desenvolvimento">Desenvolvimento do Experimento:</label><br>
+        <textarea id="desenvolvimento" name="desenvolvimento" rows="6" cols="100"></textarea><br><br>
+
+        <label for="conclusao">Conclusão do Experimento:</label><br>
+        <textarea id="conclusao" name="conclusao" rows="3" cols="100"></textarea><br><br>     
+        
+        <label for="imageUpload">Imagem 01 - Experimento</label>
+        <input type="file" id="imageUploadExperimento01" accept="image/*"><br><br>
+        
+        <label for="imageUpload">Imagem 02 - Experimento</label>
+        <input type="file" id="imageUploadExperimento02" accept="image/*"><br><br>        
+
+        <button type="button" onclick="generatePDF()">Gerar PDF</button>
+    </form>
+
+    <script>
+        document.getElementById('data').value = new Date().toISOString().split('T')[0];
+
+        function atualizarCapacidade() {
+            var laboratorio = document.getElementById("laboratorio").value;
+            var capacidade = "";
+
+            if (laboratorio === "Laboratório 1") {
+                capacidade = "46 computadores";
+            } else if (laboratorio === "Laboratório 3") {
+                capacidade = "44 computadores";
+            }
+
+            document.getElementById("caplaboratorio").value = capacidade;
+        }        
+
+        async function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Adiciona o cabeçalho na primeira página
+            addHeader(doc);
+
+            // Dados inseridos pelo usuário
+            const unidade = document.getElementById('unidade').value;
+            const data = document.getElementById('data').value;
+            const curso = document.getElementById('curso').value;
+            const turno = document.getElementById('turno').value;
+            const disciplina = document.getElementById('disciplina').value;
+            const professor = document.getElementById('professor').value;
+            const laboratorio = document.getElementById('laboratorio').value;
+            const caplaboratorio = document.getElementById('caplaboratorio').value;
+
+            // Divide a string em partes
+            const [ano, mes, dia] = data.split('-');
+
+            // Formata a data no padrão brasileiro
+            let diaFormatado = String(dia).padStart(2, '0');
+            let mesFormatado = String(mes).padStart(2, '0');
+            let anoFormatado = ano;
+
+            // Data formatada no padrão DD/MM/YYYY
+            let dataFormatada = `${diaFormatado}/${mesFormatado}/${anoFormatado}`;
+
+            // Adicionar os campos de entrada
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Unidade: ${unidade}`, 10, 50);
+            doc.text(`Data: ${dataFormatada}`, 150, 50);
+            doc.text(`Curso: ${curso}`, 10, 60);
+            doc.text(`Turno: ${turno}`, 10, 70);
+            doc.text(`Disciplina: ${disciplina}`, 10, 80);
+            doc.text(`Professor: ${professor}`, 10, 90);
+            doc.text(`Laboratório: ${laboratorio}`, 10, 100);
+            doc.text(`Cap. Laboratório: ${caplaboratorio}`, 10, 110);
+
+            // Adicionar texto centralizado com fundo roxo
+            doc.setFillColor(75, 0, 130); // Fundo roxo mais escuro
+            doc.setFont(undefined, 'bold');
+            doc.rect(0, 120, doc.internal.pageSize.getWidth(), 10, 'F');
+            doc.setTextColor(255, 255, 255); // Texto branco
+            doc.text("Sobre o Experimento", doc.internal.pageSize.getWidth() / 2, 126, { align: 'center' });
+
+            // Resumo do Experimento com fundo cinza e texto em negrito
+            doc.setFillColor(169, 169, 169); // Fundo cinza
+            doc.setTextColor(0, 0, 0); // Texto preto            
+            doc.rect(0, 130, doc.internal.pageSize.getWidth(), 10, 'F');
+            doc.text("Resumo do Experimento", doc.internal.pageSize.getWidth() / 2, 136, { align: 'center' });
+
+            // Adicionar imagem de lista de presença (selecionada pelo usuário)
+            const imageUpload = document.getElementById('imageUpload');
+            const imgLista = await getBase64(imageUpload.files[0]);
+            
+            doc.addImage(imgLista, 'JPEG', 10, 150, 190, 100);
+
+            // Adicionar uma nova página para o Checklist
+            doc.addPage();
+
+            // Adiciona o cabeçalho na segunda página
+            addHeader(doc);
+
+            // Adicionar título "Checklist"
+            const checklistTitle = "Checklist";
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.setFillColor(75, 0, 130); // Fundo roxo mais escuro
+            doc.rect(10, 42, 190, 10, 'F'); // Fundo roxo para o título
+            doc.setTextColor(255, 255, 255); // Texto branco
+            doc.text(checklistTitle, doc.internal.pageSize.getWidth() / 2, 49, { align: 'center' });
+
+            // Adicionar a tabela com critérios e respostas
+            const questions = [
+                { text: "O número de alunos é adequado considerando a capacidade do laboratório?", id: "num-alunos", lines: 1 },
+                { text: "Os alunos estavam utilizando em algum momento da aula prática aparelhos eletrônicos (celular, tablet, notebook)?", id: "alunos-eletronicos", lines: 2 },
+                { text: "Todos os alunos estavam utilizando os EPIs necessários para a execução da aula prática? (Ex: jaleco manga longa, sapato fechado, luvas, cabelo preso, máscaras e etc)", id: "epis", lines: 2 },
+                { text: "A aula prática iniciou no horário correspondente ao agendamento realizado no sistema?", id: "inicio-horario", lines: 2 },
+                { text: "A aula prática encerrou no horário previsto?", id: "encerramento-horario", lines: 1 },
+                { text: "Houve alguma intercorrência durante a aula prática?", id: "intercorrencia", lines: 1 },
+                { text: "O responsável técnico higienizou e preparou com antecedência o laboratório com os equipamentos e insumos necessários para a realização da aula prática?", id: "preparacao", lines: 1 }
+            ];
+
+            let y = 52; // Posição inicial da tabela
+            const lineHeight = 10; // Altura da linha
+            const rowHeight = 10; // Altura da linha da tabela
+            const extraSpacing = 10; // Espaçamento extra entre o cabeçalho e as linhas da tabela
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0); // Texto preto
+
+            // Cabeçalho da tabela
+            doc.setFillColor(200, 200, 200); // Cor de fundo para o cabeçalho
+            doc.rect(10, y, 190, rowHeight, 'F'); // Fundo do cabeçalho
+            doc.text("CRITÉRIO", 15, y + 7);
+            doc.text("SIM/NÃO", 175, y + 7);
+
+            doc.setFont(undefined, 'normal');
+            y += rowHeight + extraSpacing; // Pular para a próxima linha com espaçamento extra
+
+            // Adicionar as linhas da tabela
+            questions.forEach(question => {
+                const simChecked = document.querySelector(`input[name="${question.id}"][value="sim"]:checked`) ? "X" : "";
+                const naoChecked = simChecked === "" ? "X" : "";
+
+                // Adicionar o texto da pergunta, ajustando a altura conforme o número de linhas
+                doc.text(question.text, 15, y, { maxWidth: 160 });
+
+                // Adicionar resposta SIM/NÃO
+                doc.text(simChecked, 178, y);
+                doc.text(naoChecked, 188, y);
+
+                // Ajustar a altura da linha com base no número de linhas
+                y += lineHeight * question.lines; // Pular para a próxima linha, ajustando a altura
+
+                // Desenhar uma linha horizontal após cada questão
+                doc.line(10, y, 200, y); // Linha de uma margem à outra (de 10 até 200)
+                
+                // Adicionar espaçamento extra após a linha
+                y += extraSpacing;
+            });
+
+            // Adicionar nova página para as seções do experimento
+            doc.addPage();    
+            
+            // Adiciona o cabeçalho na terceira página
+            addHeader(doc);            
+
+            // Título "SOBRE O EXPERIMENTO" com fundo roxo
+            doc.setFillColor(75, 0, 130); // Fundo roxo mais escuro
+            doc.setFont(undefined, 'bold');            
+            doc.rect(0, 42, doc.internal.pageSize.getWidth(), 10, 'F'); // Fundo roxo
+            doc.setTextColor(255, 255, 255); // Texto branco
+            doc.setFontSize(12);
+            doc.text("SOBRE O EXPERIMENTO", doc.internal.pageSize.getWidth() / 2, 49, { align: 'center' });   
+
+            let newY = 52;
+            doc.setTextColor(0, 0, 0); // Resetar cor do texto para preto
+
+            // Seção "RESUMO DO EXPERIMENTO"
+            doc.setFillColor(169, 169, 169); // Fundo cinza
+            doc.rect(0, newY, doc.internal.pageSize.getWidth(), 10, 'F');
+            doc.setFontSize(12);
+            doc.text("RESUMO DO EXPERIMENTO", doc.internal.pageSize.getWidth() / 2, newY + 7, { align: 'center' });
+
+            newY += 20;
+            doc.setFont(undefined, 'normal');    
+            let resumoText = document.getElementById('resumo').value;
+            doc.text(resumoText, 15, newY, { maxWidth: 180 });
+
+            newY += (resumoText.split("\n").length + 1) * 10; // Ajusta o Y com base no número de linhas do resumo
+
+            doc.setFont(undefined, 'bold');    
+            // Seção "DESENVOLVIMENTO DO EXPERIMENTO"
+            doc.setFillColor(169, 169, 169); // Fundo cinza
+            doc.rect(0, newY, doc.internal.pageSize.getWidth(), 10, 'F');
+            doc.text("DESENVOLVIMENTO DO EXPERIMENTO", doc.internal.pageSize.getWidth() / 2, newY + 7, { align: 'center' });
+
+            newY += 20;
+            doc.setFont(undefined, 'normal');    
+            let desenvolvimentoText = document.getElementById('desenvolvimento').value;
+            doc.text(desenvolvimentoText, 15, newY, { maxWidth: 180 });
+
+            newY += (desenvolvimentoText.split("\n").length + 1) * 10; // Ajusta o Y com base no número de linhas
+
+            doc.setFont(undefined, 'bold');    
+            // Seção "CONCLUSÃO DO EXPERIMENTO"
+            doc.setFillColor(169, 169, 169); // Fundo cinza
+            doc.rect(0, newY, doc.internal.pageSize.getWidth(), 10, 'F');
+            doc.text("CONCLUSÃO DO EXPERIMENTO", doc.internal.pageSize.getWidth() / 2, newY + 7, { align: 'center' });
+
+            newY += 20;
+            doc.setFont(undefined, 'normal');   
+            let conclusaoText = document.getElementById('conclusao').value;
+            doc.text(conclusaoText, 15, newY, { maxWidth: 180 });
+
+            // Adiciona uma nova página
+            doc.addPage();
+
+            // Adiciona o cabeçalho na quarta página
+            addHeader(doc);            
+
+            // Adicionar texto centralizado com fundo roxo
+            doc.setFillColor(169, 169, 169); // Fundo cinza
+            doc.setTextColor(0, 0, 0); // Texto preto      
+            doc.setFont(undefined, 'bold');
+            doc.rect(0, 42, doc.internal.pageSize.getWidth(), 10, 'F');
+            doc.text("IMAGENS (FOTOS) DA AULA PRÁTICA", doc.internal.pageSize.getWidth() / 2, 49, { align: 'center' });
+
+            // Adicionar imagem de lista de presença (selecionada pelo usuário)
+            const imageUploadExperimento01 = document.getElementById('imageUploadExperimento01');
+            if (imageUploadExperimento01.files[0])
+            {
+                const imageUploadExperimento01Base64 = await getBase64(imageUploadExperimento01.files[0]);
+                
+                doc.addImage(imageUploadExperimento01Base64, 'JPEG', 10, 54, 190, 100);
+            }
+
+            // Adicionar imagem de lista de presença (selecionada pelo usuário)
+            const imageUploadExperimento02 = document.getElementById('imageUploadExperimento02');
+            if (imageUploadExperimento02.files[0])
+            {                
+                const imageUploadExperimento02Base64 = await getBase64(imageUploadExperimento02.files[0]);
+                
+                doc.addImage(imageUploadExperimento02Base64, 'JPEG', 10, 164, 190, 100);
+            }
+
+            // Adicionar o rodapé na última página
+            const pageCount = doc.getNumberOfPages(); // Total de páginas
+            doc.setPage(pageCount); // Vai para a última página
+            doc.setFontSize(10); // Definir o tamanho da fonte para o rodapé
+            doc.setTextColor(0, 0, 0); // Cor do texto (preto)
+
+            // Adicionar o texto no rodapé, centralizado
+            doc.text("DIRETORIA DE OPERAÇÕES ACADÊMICAS | VPEXS", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+
+            // Salvar o PDF
+            doc.save('relatorio_experimento.pdf');
+        }
+
+        // Função para adicionar cabeçalho em todas as páginas
+        function addHeader(doc) {
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const imgLeftURL = ''; // Caminho da imagem à esquerda
+            const imgRightURL = ''; // Caminho da imagem à direita
+
+            try {
+                // Imagens (você pode usar URLs ou base64)
+                const imgLeftURL = 'data:image/png;base64,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'; // Coloque o caminho da imagem
+                const imgRightURL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHsAAABbCAIAAADcCW0eAAAAAXNSR0IArs4c6QAAIABJREFUeJztfHlYVGUb98w5s8EwrIJhgAkqipC5VKapkSK44J4iWNDrQmop5FYqLepruSVIbpSgiaSiFgiUolbuZm4oJSr7vsnAbOfMnDnz/fH7eq65NHEYffmuro/7Dy4Yzjznee7nfu77d2+P0GQyCTqoHYn6fz2B/++og+PtTR0cb2/q4Hh7UwfH25s6ON7e1MHx9qYOjrc3dXC8vamD4+1Nomc7nMlkEgqFAoGA53me54VCIcuyYrHYaDTKZDI8gCfxWFuJ53mDwSAWiw0GA0VRIpGI4ziKokwmE03T1o1pTkajkWEYk8kklUoxf7FYrFaraZqWyWQU9QwEtEPG25v+hxznef7cuXOffPLJH3/8IRQKTSYTBFwoFBJhNP1NFo7JcZxYLNbr9SKRSKfT8TwPMReJRM8kJIdzo9FoPvvss6CgoKCgoFOnTmEtHMc9/fj/W47fvn37P//5z2uvvfb555+bqxEoHDBa+DdZOKZIJOJ5XqPRbNiwQavVmkwmvV4PrfX0KgUSYDQa165dW1VVtWfPnu3bt+/Zs+fKlStisVgikTz9+P9bjjs5OTEMc/r0aZ7noRaNRqPBYNDr9Xq93mAwcBzH83ybxqQoymAwrFixYvv27dOnT29oaMCHLMs+ExkXCoVNTU3Xr19fu3Zt165du3Tp0qNHj61btyqVSqPR+PTjt4Hj2HwYLoPBwDAMy7IGg4FlWY7jOI7DA+Zf8fT03L9//5UrV9asWcOyLOSaCLjRaMRPvV4PZj1OveABg8GA8RsaGk6ePHnw4EGRSJSSkkJsqeUyjtmSt2M+BoMBc7tw4cKwYcO6dOmiVqttbGzGjh2r1Wrv379P0zQkhmhCsuo2bYZFWAWSiNEjIiIaGhpEIhFUs9FoVKvVAQEBW7dutbGxMf+WUCh86aWXvL29e/XqhSUJBAKxWIw183+TVCoFy/AtgnZALMtKpVKGYSQSicFg0Gg0Z86csbe3z83N/e6772JiYk6dOhUcHKzX6ymKomnakuVgfPALq6MoCmvkef77779ftWpVc3OzTCZjWdbf3/+VV17Jysrq37+/WCymKAroSCAQ0DTNcZyFL20bx/EakUikVqvr6up27tzp4OAgk8kYhtHr9RkZGd9///2j+0xkVqfTYTNEov/7OplMptFoiouLeZ5/7rnnFAqF0WgEvAMmI4NIpVKVSmVjY2MwGM6cOYNX//jjjzqdrnPnzps2bZozZ07Xrl0DAgIst2xCoRDbD6uQmpr6/fffjxgxIjY2trm5WaPR+Pj4iMVinudtbW1NJtO77767bNkyYvbJPuH8SSQSoVBoOXC0VMYpijIajWKxWKlUzp07d8CAAfPnz1+zZk15eXlVVZW7u/ujrxQKhY6Ojjqdzs7OjmVZmUwmFAr1ej2wucFgCA8PV6lUqampAQEBUAuPTp3neYVCwXHc7du3ly9fPnTo0C+//NJgMLi6up45c4Zl2REjRqSnpwcEBFiuVSiKwtY2NjbW1NQkJCQkJye/9957I0eOFIlEbm5uIpFIKpXqdDpYZltbW4ZhHjx4IJfLa2tr7969e+fOnZ49ewYGBjo4ODQ2Njo7O1v4aks5jo3leZ6m6fXr1xcWFh45cuT555+fPHlyVVWVra1tt27dpFLpQ99qamrKzs6uq6v76aefQkNDwW6sVqPRHD16dPTo0VKp9OjRo/7+/hCZR0+o0WjkOO7SpUuffvrpypUrx44dC/ekurp69erV1dXVfn5+gwYN0mq1D+m0Vkiv13Mcl5SUlJmZ2alTJ1tbW29vb3d39xkzZvj5+Tk7O1dWVnp4eNA0bTAYdDrd+fPnKyoqwsLCRCKRk5NTp06dHB0dCwsLN27c6OnpGR8f/5AmfAIzrTDxDQ0NYWFhx48fZxhm9uzZqampRBsIhUKYl7S0tKysrCFDhowdOzY9Pb2goGDSpEkhISEqlSonJ+f27ds+Pj55eXkMw3z00Ue+vr7Q6WKxGAaKYRhwv6ysbPPmzVlZWbGxsfPnz8dRyMnJgT6Ry+V2dnb5+fn79u07cuRIly5doIgYhoGL+ziOV1dXv/POO9nZ2WKxeM+ePfv37x85cmR0dPS3335bVVUllUorKyu9vLyKioqUSuWgQYPy8vIiIyPHjh0rFAqB/XmeZ1k2MTGxc+fOUVFRRGE+kazx8s2ZCxBC0zSEV6vVVldXx8XFDRgwYM+ePXK53GAwxMXF3blz5/Tp03FxcQqFYsSIEdOnT5dKpYB6sPXwp6FS9Hq9VCo1mUw5OTkbN24cO3ZsXFxccXFxRETEmDFjioqKCgsL09LS3NzcaJqurq7esmXLwIEDt23b9uWXX9I0jZ1rZf4cx0kkEqB4Ozu7qKioqKgonU4nl8srKyt9fX1///13W1tbe3t7mqblcrmrq+urr76q0WhEIhFEQSgUHj9+fPXq1SqVavr06W3z/k1tp5qamqCgIKPRqFQqJ0yYAKaDWJbNyMiYN28ecDfDMICSarW6vLw8LS3t6tWrarXaZDKxLKtSqTQajU6nAzwn4wM4ZmVl+fj43Lp1S61WGwyGlpaWpUuXikQiIBNARq1W+/PPP8fGxl6/fn3UqFHArwTwtUIcx02YMAG+AnS0TqcrLS0NCwuzt7fftm2bWq3meV6n06WlpQ0ePFgul8fHxxM4qNfrg4KCsrOzb9++HRQUhBVZSNbIONFZQjPCcDRNKxQKgUBw9+5db29viUSi1+uFQqGtra1UKlUqlXi4paWFpmmJREJRFKQGOgSnh2GYlJSUY8eObdu2rXv37kBKf/31V15e3qJFi95//308ptfraZqWSqX19fW3bt0igAqBrVYUK0QkJiZmw4YNHh4eXl5eJpMpMzPz5MmTN27c2L9/f2BgoK2tbU1NjUgkeuutt4YNG5aSkpKQkCCRSCZOnOji4iIQCGBOGxoa2uqOWslxGHFoEig1As85jhMKhZs2bdqxYwdkDSwQiUQqlaq+vr537940TYvFYoAzaABzBv3yyy/btm07fPiwj4+PSCRiWfbw4cOHDh3asGGDn58f8AyG5Xl+0KBBZWVl5eXlmzZtwud4aStcgA585ZVXpk6dOm3atPnz59+8eVMqlS5atIhhmP79+/M8v3z58mvXrtE0HR8f/8ILLwwZMqSioqKkpCQsLGzq1Kl9+/atq6s7cuSI0WiMjY21XIlbH60VCoWQX7JIrITneaVSSVFUc3NzWVnZCy+8AKANSYcCRbQI7gN8IsJuKMTm5maO41xcXCiKys3N3b59u7Oz8969exUKBVkbvsIwTHx8vFKppGk6NTWVZVmJROLg4BAREeHl5fW4yWNKYrE4JCQkPz//008/HTly5JYtWwBOBAJBcXFxfHz85cuXf/vtt9zc3Pnz51MU1alTp1WrVlVUVMyaNWvdunXJyclBQUHwgAwGg+VibmVcBQid+DjgoNFoFIlEeLe/v/+cOXNOnz5tMpkYhqEoChCCaAPsE5TAQxrg5Zdflsvln332WU5OzuLFi998880dO3ZIJJJHRUmlUmVlZfXr169Xr17+/v59+/aVy+UrVqxoampqffIcx7Esu2XLlpycnM2bNxcVFX3zzTc6nY5hGJjTXr16bd68OTMzs3PnzpghfJGtW7cWFxePHDkyPT0dhspyXxdkJcdpmmZZFr4+0Yw0TWs0msGDBxuNxsbGxokTJyYmJm7atEkqlV65cmXBggVQ7pBubA9JX5gP7unpmZqa6uDg8MMPP8THx7/77rs2NjZyufxRIGs0GuVyuUAgcHZ2njhx4qBBgwBgIKqPI/iTP/3004MHD9LS0iZPnrxt27azZ8++//77JSUlBoPB3d09KSnJw8NjzJgxo0aNguG5evVqeHi4Uqk8duxYQkICz/MREREPHjwwGAxtC1tagVWuXbs2atQojuM0Gs3rr79eXl4OoMJxHMMwQCa5ubkTJ05ctGjR/v37o6OjY2Jifv/9d6VSqVarSeyQRMceGp9lWaVSyXGcVqsFbmFZ9h8RiFKpTEhI6Nev3/bt21taWn799Vd/f/+dO3fW1NS0Mn+j0ZiXlzdu3LiGhoaGhgadTqdWq1UqVWZmZkBAwMyZM2/fvq3T6bRaLZB7SkrKqFGjxo4de+vWLaAvrH3dunXjxo2rq6sjoTFLyCKO8zyv1WpVKpXBYMjLyxs6dOjFixcB+44cORIcHJyfn6/VaslsEKhqbm7Ozs4eMGBAZmYmcDe+gt8tn2IrpNfra2pqpk+fznGcXq8vLS0NDQ2FHmvlW0ajcfny5RkZGbDker1eq9UCzkZFRX311VcjR46cPHlyQkLCkiVLAgMDFy9e/Pbbbx86dAgbj9XpdDqE6Tds2NCm5Vgq4zqdDqB49OjRe/fuBRzW6XQsyy5evNjLyysvL0+lUuFzzAmuTXh4OMJD2Ll/FGqryWg01tbWTpgwoba2FvI4ZsyYJ46vVqvHjRtXXFzc0tICUI8563S66Ojo7Ozs9PT0Xr16yWQyBweHzMxMk8m0cOHCixcvkmizWq3Gpt6/f3/kyJFtWpFFehx28s8//wwLC/Px8XFycvr6668ZhoHdW7FiRURExMcff6xSqeBGkkQP/HWj0YioS1szPpaoRK1WK5fLXVxc4PFKpVKAola+JZVK+/Xrl5iYWFRUVFpa2tTUdO/evUuXLmVmZlZUVKxcuTItLS0sLOznn3+Oi4uLj48fM2bMuXPn4PFjacBXsGSPJgZaJ4viKkajMT8//8MPP5w+ffpzzz23efPmb7/91svLC2AOyzt27Nju3bu/+eYbT09PZAmQipw1a9aOHTscHR3BaBLtfCZ8Z1m2paUlNDR0xowZ/fv3f/7555ctW3bgwAGKolrxvDmOU6vVqampv/76q0ajEYvFYrHYzc2te/fuarUaCppEivR6fV5e3gcffODt7Q3g2717906dOuFYXLhwYc6cOWFhYW1YzuOEn/ubTCbTjRs3Ro8eff78eYZhPvzww5KSEoAT5LqglzmOO3r06IQJE65cucIwjFar5TiurKwsMDCwpKQEkc9nTizLVlZWvvnmmykpKSEhIdHR0dDjUG6tEDI+0N2wAVhOcXHx+PHjoWEQWNbpdBcuXBgzZgzDMEqlsry8PD8//5dffsnOzj5z5kxtbS3DMG2ynI/1gEh8qrKycs2aNaGhoW5ubjzPz549WygU1tbWQj8gjgGZGjBgwNmzZ5cvX7569erBgwdXVFRER0f/+eefiYmJGzdutEaGn0RQd3K5PCoqavjw4bt27UKI44lfBLQnAB+AWiKRuLi4IMzi6urKsizDMAqFYvfu3f369ZNIJFKp1MHBQSAQ+Pn5mSPaNp3Xx3Ico9y9ezcmJsbHx2f48OHLly8nTjx5DLEU5EFcXV1XrVq1efPmL774Ijk5uaampry8/MiRI5999hnCgZZPy0KCoy+RSLRaraenZ3R0dGxsLFFcVpBMJnNxcamqqpLJZHK5XCKR3Lt37+zZs19++eVDT1qtFR/LcdjlioqKa9euzZw5s6SkZNasWXBbzNcDZ0yj0dja2up0uqtXr44ePfrSpUvNzc2+vr5RUVE7d+6cOXNmW5OBFhIsGMMwzc3Nrq6uNTU1dnZ2T1NJIRaLIyIidu7cuXXrVhj/o0eP9ujR4/XXX3/oyWfPcVTeuLq6KhSKzz//nKIorVZrb2+v1Wrh9eKVEokEWk8sFkP7wx2Xy+UURS1evBipYQSXrZtiK6TT6dzd3W1sbBYuXLhgwYLNmzdHRkYijNN6iPxxZDQaBwwYsH79+nPnzg0ZMkSr1WZkZKxfv97e3v4hFj90jJ5BDggq0mAw1NfXQ0JxhKH+CceR/4TjDniAuJ2dnR1Cgwhv/WNG7ekJ0YKKioodO3aUlZX5+/vHxMRQFCWTyazbYCxww4YNx44dmz9//h9//CGRSNavX//oEp49x/8VhFOFuBjDMDY2Nth+q0sy4UzSNH3z5s1z5865ublNnTqV53mZTGY0Gp9JWda/m+PmxT2w3pA12HPrBoRrg1g0eE1RFCkAeXr619fWosbI1tYWgPpRNNUm0mg0KEHRarVI9LAsKxAIbGxsnlWl579exvEL0txIDMEAWqcBgE9ITQv8eKPRiCzKM/GT/90c/zfSv16r/Ouog+PtTR0cb2+yhuMkWyYQCEjZNUACyTnAjiHdjj8tHx8RdpZlgRPwJynTNv9JMnN48pkQFoKXkuwKqadFVPJpqvet4TgmgYp9iqJIDQUin0BRiIXC/2xrAwNN0yqVCnUWxcXF9+/fR5oGsVOyB8iX2tjYsCz7xCxEW1eHLQdnERqDf4u3Pw3HrXGF4V+gphv+Hj63tbXFRBEJoGlarVbb2dm11XfgOM7Ozs5kMlVUVLz99tt37tyZN2/e559/Dsddo9HIZDJUrykUChTzo+bYirU8RAaDQSqV6vV6gUBw5coVLEckEiFk5uHh4enpiVVb/QprOE7T9P379ysqKlDZTdN0586d3d3dSQVWQUFBc3MzorhardbDw6Nz586WR2uxiyzLlpaWdu3a9eOPP/7qq69aWlrs7e01Go1cLkflX1FRUVpamr+//+TJk21sbBAIsmI55iQSiVDMlJycvG7duj59+iCahJLS0aNHr1q1SiwWMwxj9QZbw/GbN29GRkb26NEDsSqGYQoLC5OTkwcOHEjT9JUrV+bNm4e6FByIqqqq06dPWz4+wq00TXfp0uXBgwcosVy2bNmyZcu8vLx4ns/Ly/vmm2+qq6vHjx9/+/btrKyshQsXDh482Iq1PEQmk0ksFrMsq9VqfX19165d261bt5KSEpVKdfXq1ZqaGnhDrZRKP5Fai4//Y72kUChsaGgYPnx4YmIiohDl5eVBQUFIK/M8X1hY2KtXr71795JU74gRIxiGQTgXzmHr/ptEIsHbvb29jx49qlKp7Ozsjh8/vnDhwhdffJFhmMbGxvfeew8bLBAICgoKEFGBKkfPp3UHHypbIpH069fv/PnzoaGhycnJKSkpEPypU6eizPppzlNrMg4OYnSSF8bRk0gkYBzKWdE6hf2HQ4yT6ODggKJAEtdFneYT3WWsHI+5ubkZDIbx48f7+fmhmCApKUmhUIjFYp1OJxQK+/TpYzKZoN8RVHkaRxpxqzfeeGPo0KGTJk3q3r37gQMHzp49O2jQIMTcWZZ9GvX12G+STChRDuRz7AFN06i6EwgEgGgIk6Idi5TfQ5wJB/FdQI7WCd+CvONkeHp6Tp48eeDAgQ4ODhzHKZVKqVSKlIjJZEKfERLzVgdASPMN0AiwYH19/fr166urq1GjAnmybvwnyDhpuysqKkJBHlJu165dKy4uRrm7yWSqq6sTiURoBed5vqCgAC2XJDD04MGD3NxcW1tbcITjuN69e7dS+woicVfzk9Hc3Ozk5FRYWOjj4yOVSkmCDQAxISFh0aJFCLFaxw6hUKjT6WQyGSKI4IBMJlOr1RRFITr2NOx+slaBcJWUlOTm5mZmZk6aNImiqLKystra2hMnTigUCr1ejxqPO3fuqNVqoVBYXFxcU1Pz22+/AcwZjUatVnv58mWxWHzy5ElfX18vLy83N7cncpyIOU3TyOqhHUSv12/ZsiUhIYH0zEGVicXiw4cPL126FE6ZeaLK8hwN0CGpBkXgEHiX6NinTGY9luNEVUkkkqCgoP79+9+9e3flypVSqfTMmTM5OTnr16+HAFZXV584cWLmzJmBgYFCoTA1NVUmk8XFxRGtd/Xq1Y8++kgul+t0upCQkMDAQMtTYhRFqdVqnAxYAig0nudtbGxUKhWOjkgk0mq1kE2IpJ2dHWGi5TlPiUSCHBCUFcdxNjY2CoXC1tZWo9HgAdzDYOGA/7AiSx6C+UbZG1KapDIWO69Wq4lbj4miQA5KnBxJ/ItoSUuItLFSFNXY2NjU1FRTUyORSH744YfGxkZIN2rtVCoVqmRJhhaO8ROLm80JOAcaHKoMBcM6nQ4WBSVwT2WZLXmI9M2b3x0DG4IPHR0dse04ieb32oD7ONck9dyGPKxQCJWakZExd+5cNKXX19eXlJTExMSkpqbqdLp79+4lJSXNnDnz5ZdfDg8PP3jwoFarBaOBoCzXAwRuAQS3tLSQCFJlZSVCF0S2rCOLOE4aeUgTDVHx+BckCycAP4nhBXgggAd6uU1T5Hm+qqpq69atH3zwwc6dO5OTk7t167Z79+6QkJA+ffrcv38fFSZr1qxJSEiIjo5euHDhypUrW1paME80Zlj4LlIompOTM23atIKCAuBOsVgcFha2a9eup7+BwtIucWwsiRFCBE6cODFjxgzoSmwAnjeZTPn5+U1NTW+88QYiXBB2UhmKzXtcyedDEiSTyVxdXdPT052cnPDwqlWr+vbt+9133zU3NwuFwtjY2JkzZ2I7x48f/9JLL3399dezZs3y8/Pz9fVFJWIrxpNMDMinvLw8JiamoqJiypQp//3vf7t27Xr58uWwsDCxWHzo0KF9+/YtXbp0/Pjx5CYEcoIt5LilMg5jRTQDDCaavQC6CXLHcb5x48bFixfxdXyLzOxRGQfw/8cPSSjY2dlZ9DcJhcLQ0ND9+/f7+vquWLEiPDzc/AoFT0/PdevWOTo62tra5uTkbNmypXUlgAnjdcXFxeHh4TNmzLhw4UJsbOwrr7yyd+/e2bNnZ2VlVVZWHjx4MDExMSUlJSUlhST+2xqztMZ3IjqaqJqH/mvelPU4IqiWcNb8lhXiN4IXGBNKDHBQKBRKpVKZTCaTyWiabm5uJteVQbP17t372rVrV69e7dGjR+szgdDA04mJiYmNjZ00aRLLshUVFQ0NDQqFQqfTob5OJBL1799/165d+/fvv3z5MmS8TWbJykgW8AkxlQ/9yzyU3AqR0lwU98BtIde2kAzAqVOnamtrBQJBYGCgh4cHGu5RTwKHCHjZ0dERLX74F03TCxcu3Ldv3wcffDBkyJDWOY7oFUVRhw4d0ul0o0ePFggEx48fX7Ro0QsvvJCVlZWQkFBXV0e6wd3d3aOiopKTkwcPHgzw3qYwi5U5IMCVR2sq8S9iPFshc5cSeokgGSJ3PM/funXr999/LygoIMEZADggP7lcTvwsmApAN0DmyMjIl1566Yl7DykpLi5OTk6eMmUKdvTQoUPDhg0zGAy1tbX+/v4BAQHEnhmNxlGjRt24caOhoYHc9WM596zMAYFHnTp1glUEHsDnKpUK95PY2dkhK4R/mU+LiDB+QZe4+eaR/hWKoh48eODs7Iw2HPyXXElIMgYENZHQGyyHvb09Kk9bOfiY3qVLl9DlBN/qnXfeqa2t7dmzZ1JSUkRExNq1a6dMmVJYWHj37t2bN2+WlZW5u7vv3bsX99G1KbBlfV++t7f3F198gbCOg4MD1oyfLMuOHz8esQ7EIoh5MS9Ug2CSP823BIaapmlfX98ff/zRyclJpVJdv349JCQkICBAJpNdvHhx3759f/31F2ByYGAgLs0BeGhT6AP1wEVFRajDx5SCg4Mh48HBwT/++KOzs/OaNWvmzp0L/xNBaZ7n58+f39Y6VmtkHAWVYrFYoVCo1Wq0wcElgx8M6+/k5ERRlEqlIvJoTuZ9b5BlQngAn4eGhh4+fLi5uTk3N/fFF19ctGhRY2Pj+fPnp0yZ8vzzz6ekpERGRoaHh8+bN48M8kSj/RAh7+Pk5NTQ0LBkyZJffvmF47jGxkY4yU1NTba2tkajccGCBQcOHPjpp58OHDiQlpY2d+7clpYWHPH/uYy7uLjcu3evrq7O0dGRpul79+41NTWhZ4WiKD8/v6SkJOJk19fXm0wmkqMiitv8YjAi5ubyTu4Pc3V1TUpKSk9P37VrV2ho6Pbt2/Py8g4ePPjqq6+KRCIPD48TJ07s2rUrKCho6dKlBH1bTngdUuQ9e/bctm3bggULHB0dTSaTk5PT1KlTtVpt586dYatxWKVSaV1dnYuLCyxKm+CKpRwntRI0Tffs2bNbt24zZswIDAw0mUwnTpzYtGlTr169YK/69u0bEhLy9ttvjxs3rr6+Pjc3d9WqVTjsxB6SGkECDQmmJFoLP6FeFApFZGRkaGhodna2RCIhN9egb7FPnz47d+4sLS2dMWNGcHAwQjFtYrfRaOzatWtFRUVERASut0BcBdEkqVRKzDVh7qVLl+Li4hAxfvYyjo1Fbh4+yJYtWwoKCs6dOycSiQ4dOuTq6gp2o/56yZIlw4YNu3Dhgre39+7du7t160Y8T9h6aHwiXMDX5MIw8wWQq1dwZ1hYWBjyXtBUYBZCY+7u7hgE1/k9sdKTmFmUYPTv33/y5MmZmZm+vr7E6SNBRJKfAdPz8/NNJtOgQYNIjvAZdBeaE2Y2dOjQvXv3oiNWq9U2Nzcj4w7kYN6NqNFokG5vbm7GkrRarVarfe2110pLS3V/k1arRfWweZd16/2/SqWSZdmzZ89i58j1RYjwBQcHo28a9S2tE76OLkJgKnQ81dTUYFFkZDS3Y0woyaioqMTERHgSbe14t1SrsCw7e/bsTz75pLKysm/fvuReThw9kh4itdtCoRDIAfNuaGg4fPiwr6+vvb09So3xXQvTnoQcHBz0ej1R4kDfJEk0bdo0XIBlIVYBC+A68jzfs2fPIUOGHDx4cPbs2ahage4mEFav1zs4OPz888+3bt1at26duWJ8xl0pkFyDwVBaWnry5Mmmpia4P1gw8QJI5AR6GT43uUTltddee/HFF+VyOWKe8M7NQ7gPXdv8jwSDPGfOnPj4eHT/QcO2tLSkp6cfOHAgLCzsnXfeQRl/64siYAmhHmR/GIbZuHEjRVGjRo1CsQppd+I4rri4+Ntvv7148eKuXbv8/PxIupxEjZ4Zx9tE2HPzcBpunSBXLeEokBRwm5rG09PTjx07NnDgwPz8/OHDh7/xxhtubm4URSmVymnTpn3yySerV6/OyMiwsbF5ojXPMT53AAABqUlEQVQjNYUQCHI6DQZDRkbG7t273dzcgoODvby8VCpVWVnZ2bNna2pqhg0bFhkZ6eHhYX17apt0UJuI6EGWZXGtCm5fwcUh5L4U88uxn0hNTU0JCQndunX74YcflixZ8tZbb6lUqvv37xcWFkZERPj6+iJsSyrxWp8eJgNJR1UQJolG1lOnTkVHR/fr18/Ozs7d3T0uLq6oqAhnvU1t4Q/RM5Zxc41GyiVIbS1BgchdkTNruR5EjOz06dObNm3y9PR8/fXXlUplVlbWqlWrevfuff369ZdfftnZ2Vmr1aKduxUiCR24bBB5Ei4H+sTGAALiTyRkyG0aVtAz5ji5PwtYwtylJL3+D+V52xTqRAEJjs6ZM2eOHj3q4+MTHR3t4uICX4Fce9FKNplEg8nxQm4a8kEy0RBkggtIpJPw3ToW/U9knFxIgd/BZfMwIRHttnJco9EgMgW1S64WhfUzT2m2Mqy5c0vODWAJgedISWM0crEgSfCSFi8rqKNHor2po9etvalDxtubOjje3tTB8famDo63N3VwvL2pg+PtTR0cb2/q4Hh70/8Bp9ycs9kAu+gAAAAASUVORK5CYII='; 
+                
+                // Configurar o cabeçalho com as imagens (Comentado enquanto as URLs estão vazias)
+                doc.addImage(imgLeftURL, 'JPEG', 10, 10, 30, 30); // Imagem à esquerda
+                doc.addImage(imgRightURL, 'JPEG', pageWidth - 40, 10, 30, 30); // Imagem à direita
+            } catch (error) {
+                console.error("Erro ao carregar imagens do cabeçalho: ", error);
+            }
+
+            // Texto do cabeçalho
+            const reportTitle = "RELATÓRIO DE EXPERIMENTO";
+            const subtitle = "Aulas Práticas";
+
+            // Centralizar o título
+            doc.setFontSize(16);
+            doc.setFont(undefined, 'bold');
+            doc.text(reportTitle, pageWidth / 2, 25, { align: 'center' });
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'italic');
+            doc.text(subtitle, pageWidth / 2, 35, { align: 'center' });
+        }
+
+        // Função auxiliar para carregar imagens
+        function loadImage(url) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.src = url;
+                img.onload = () => resolve(img);
+            });
+        }
+
+        // Função auxiliar para converter imagem em base64
+        function getBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+    </script>
+</body>
+</html>
