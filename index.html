@@ -5,59 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerar PDF</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 13px;
             margin: 20px;
         }
-        form {
-            max-width: 800px; /* Ajustado para um tamanho mais adequado */
-            margin: auto;
-        }
-        label {
-            display: block;
-            margin: 10px 0 5px;
-            font-weight: bold; /* Negrito */
-            font-size: 15px; /* Aumentar fonte em 2px */
-            text-align: left; /* Alinhar à esquerda */
-        }
-        input {
-            width: calc(100% - 20px); /* Ajustar a largura dos inputs para a largura do formulário */
-            padding: 5px;
-            font-size: 11px;
-        }
-        button {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            font-size: 11px;
-        }
-        .required:after {
-            content: "*";
-            color: red;
-            padding-left: 5px;
-        }
-        .question {
-            margin-bottom: 15px;
-        }
-        .toggle-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .toggle-group input[type="radio"] {
-            display: none; /* Oculta os botões de rádio reais */            
-        }
         .toggle-label {
-            display: inline-block;
-            padding: 4px 8px; /* Diminuir o tamanho dos botões */
-            border: 1px solid #ddd;
+            padding: 4px 8px;
             border-radius: 5px;
             cursor: pointer;
-            background-color: #f9f9f9;
-            font-weight: normal; /* Remover negrito */
-            font-size: 12px; /* Ajustar tamanho da fonte */
+        }
+        .toggle-group input[type="radio"] {
+            display: none;
         }
         .toggle-group input[type="radio"]:checked + .toggle-label {
             background-color: #007bff;
@@ -67,127 +27,173 @@
     </style>
 </head>
 <body>
-    <h2 style="text-align: center;">Gerar PDF de Experimento</h2>
-    <form id="experiment-form">
-        <label for="unidade" class="required">Unidade:</label>
-        <input type="text" id="unidade" value="Santa Bárbara d’Oeste" required><br>
-        
-        <label for="data" class="required">Data:</label>
-        <input type="date" id="data" required><br>
-        
-        <label for="curso" class="required">Curso:</label>
-        <input type="text" id="curso" value="Ciência da Computação" required><br>
-        
-        <label for="turno" class="required">Turno:</label>
-        <input type="text" id="turno" value="Noturno" required><br>
-        
-        <label for="disciplina" class="required">Disciplina:</label>
-        <input type="text" id="disciplina" required><br>
-        
-        <label for="professor" class="required">Professor:</label>
-        <input type="text" id="professor" value="Wilton Ruffato Wonrath" required><br>
-        
-        <label for="laboratorio" class="required">Laboratório:</label>
-        <select id="laboratorio" required onchange="atualizarCapacidade()">
-            <option value="">Selecione um laboratório</option>
-            <option value="Laboratório 1">Laboratório 1</option>
-            <option value="Laboratório 3">Laboratório 3</option>
-        </select><br>
-        
-        <label for="caplaboratorio" class="required">Capacidade Laboratório:</label>
-        <input type="text" id="caplaboratorio" readonly required><br><br>  
-
-        <label for="imageUpload">Upload de Lista de Presença:</label>
-        <input type="file" id="imageUpload" accept="image/*"><br><br>
-
-        <div class="question">
-            <label for="adequado">O número de alunos é adequado considerando a capacidade do laboratório?</label>
-            <div class="toggle-group">
-                <input type="radio" id="num-alunos" name="num-alunos" value="sim" checked>
-                <label for="adequado-sim" class="toggle-label">Sim</label>
-                <input type="radio" id="num-alunos" name="num-alunos" value="nao">
-                <label for="adequado-nao" class="toggle-label">Não</label>
+    <div class="container">
+        <h2 class="text-center">Gerar PDF de Experimento</h2>
+        <form id="experiment-form" class="row g-3">
+            <div class="col-md-6">
+                <label for="unidade" class="form-label required">Unidade:</label>
+                <input type="text" class="form-control" id="unidade" value="Santa Bárbara d’Oeste" required>
             </div>
-        </div>
-
-        <div class="question">
-            <label for="eletronicos">Os alunos estavam utilizando em algum momento da aula prática aparelhos eletrônicos (celular, tablet, notebook)?</label>
-            <div class="toggle-group">
-                <input type="radio" id="alunos-eletronicos" name="alunos-eletronicos" value="sim">
-                <label for="eletronicos-sim" class="toggle-label">Sim</label>
-                <input type="radio" id="alunos-eletronicos" name="alunos-eletronicos" value="nao" checked>
-                <label for="eletronicos-nao" class="toggle-label">Não</label>
+            
+            <div class="col-md-6">
+                <label for="data" class="form-label required">Data:</label>
+                <input type="date" class="form-control" id="data" required>
             </div>
-        </div>
 
-        <div class="question">
-            <label for="epis">Todos os alunos estavam utilizando os EPIs necessários para a execução da aula prática? (Ex: jaleco manga longa, sapato fechado, luvas, cabelo preso, máscaras e etc)</label>
-            <div class="toggle-group">
-                <input type="radio" id="epis" name="epis" value="sim" checked>
-                <label for="epis-sim" class="toggle-label">Sim</label>
-                <input type="radio" id="epis" name="epis" value="nao">
-                <label for="epis-nao" class="toggle-label">Não</label>
+            <div class="col-md-6">
+                <label for="curso" class="form-label required">Curso:</label>
+                <input type="text" class="form-control" id="curso" value="Ciência da Computação" required>
             </div>
-        </div>
-
-        <div class="question">
-            <label for="inicio-horario">A aula prática iniciou no horário correspondente ao agendamento realizado no sistema?</label>
-            <div class="toggle-group">
-                <input type="radio" id="inicio-horario" name="inicio-horario" value="sim" checked>
-                <label for="inicio-horario-sim" class="toggle-label">Sim</label>
-                <input type="radio" id="inicio-horario" name="inicio-horario" value="nao">
-                <label for="inicio-horario-nao" class="toggle-label">Não</label>
+            
+            <div class="col-md-6">
+                <label for="turno" class="form-label required">Turno:</label>
+                <input type="text" class="form-control" id="turno" value="Noturno" required>
             </div>
-        </div>
 
-        <div class="question">
-            <label for="encerramento-horario">A aula prática encerrou no horário previsto?</label>
-            <div class="toggle-group">
-                <input type="radio" id="encerramento-horario" name="encerramento-horario" value="sim" checked>
-                <label for="encerramento-horario-sim" class="toggle-label">Sim</label>
-                <input type="radio" id="encerramento-horario" name="encerramento-horario" value="nao">
-                <label for="encerramento-horario-nao" class="toggle-label">Não</label>
+            <div class="col-md-6">
+                <label for="disciplina" class="form-label required">Disciplina:</label>
+                <input type="text" class="form-control" id="disciplina" required>
             </div>
-        </div>
 
-        <div class="question">
-            <label for="intercorrencia">Houve alguma intercorrência durante a aula prática?</label>
-            <div class="toggle-group">
-                <input type="radio" id="intercorrencia" name="intercorrencia" value="sim">
-                <label for="intercorrencia-sim" class="toggle-label">Sim</label>
-                <input type="radio" id="intercorrencia" name="intercorrencia" value="nao" checked>
-                <label for="intercorrencia-nao" class="toggle-label">Não</label>
+            <div class="col-md-6">
+                <label for="professor" class="form-label required">Professor:</label>
+                <input type="text" class="form-control" id="professor" value="Wilton Ruffato Wonrath" required>
             </div>
-        </div>
 
-        <div class="question">
-            <label for="preparacao">O responsável técnico higienizou e preparou com antecedência o laboratório com os equipamentos e insumos necessários para a realização da aula prática?</label>
-            <div class="toggle-group">
-                <input type="radio" id="preparacao" name="preparacao" value="sim" checked>
-                <label for="preparacao-sim" class="toggle-label">Sim</label>
-                <input type="radio" id="preparacao" name="preparacao" value="nao">
-                <label for="preparacao-nao" class="toggle-label">Não</label>
+            <div class="col-md-6">
+                <label for="laboratorio" class="form-label required">Laboratório:</label>
+                <select id="laboratorio" class="form-select" required onchange="atualizarCapacidade()">
+                    <option value="">Selecione um laboratório</option>
+                    <option value="Laboratório 1">Laboratório 1</option>
+                    <option value="Laboratório 3">Laboratório 3</option>
+                </select>
             </div>
-        </div>
 
-        <!-- Adicionando textarea para Resumo, Desenvolvimento e Conclusão -->
-        <label for="resumo">Resumo do Experimento:</label><br>
-        <textarea id="resumo" name="resumo" rows="3" cols="100"></textarea><br><br>
+            <div class="col-md-6">
+                <label for="caplaboratorio" class="form-label required">Capacidade Laboratório:</label>
+                <input type="text" class="form-control" id="caplaboratorio" readonly required>
+            </div>
 
-        <label for="desenvolvimento">Desenvolvimento do Experimento:</label><br>
-        <textarea id="desenvolvimento" name="desenvolvimento" rows="6" cols="100"></textarea><br><br>
+            <div class="col-md-6">
+                <label for="imageUpload" class="form-label">Upload de Lista de Presença:</label>
+                <input type="file" class="form-control" id="imageUpload" accept="image/*">
+            </div>
 
-        <label for="conclusao">Conclusão do Experimento:</label><br>
-        <textarea id="conclusao" name="conclusao" rows="3" cols="100"></textarea><br><br>     
-        
-        <label for="imageUpload">Imagem 01 - Experimento</label>
-        <input type="file" id="imageUploadExperimento01" accept="image/*"><br><br>
-        
-        <label for="imageUpload">Imagem 02 - Experimento</label>
-        <input type="file" id="imageUploadExperimento02" accept="image/*"><br><br>        
+            <!-- Perguntas com opções Sim/Não -->
+            <div class="col-12">
+                <label for="adequado" class="form-label">O número de alunos é adequado considerando a capacidade do laboratório?</label>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="adequado-sim" name="num-alunos" class="form-check-input" value="sim" checked>
+                    <label class="form-check-label" for="adequado-sim">Sim</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="adequado-nao" name="num-alunos" class="form-check-input" value="nao">
+                    <label class="form-check-label" for="adequado-nao">Não</label>
+                </div>
+            </div>
 
-        <button type="button" onclick="generatePDF()">Gerar PDF</button>
-    </form>
+            <div class="col-12">
+                <label for="alunos-eletronicos" class="form-label">Os alunos estavam utilizando em algum momento da aula prática aparelhos eletrônicos (celular, tablet, notebook)?</label>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="alunos-eletronicos" name="alunos-eletronicos" class="form-check-input" value="sim">
+                    <label class="form-check-label" for="eletronicos-sim">Sim</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="alunos-eletronicos" name="alunos-eletronicos" class="form-check-input" value="nao" checked>
+                    <label class="form-check-label" for="eletronicos-nao">Não</label>
+                </div>
+            </div> 
+            
+            <div class="col-12">
+                <label for="epis" class="form-label">Todos os alunos estavam utilizando os EPIs necessários para a execução da aula prática? (Ex: jaleco manga longa, sapato fechado, luvas, cabelo preso, máscaras e etc)</label>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="epis" name="epis" class="form-check-input" value="sim" checked>
+                    <label class="form-check-label" for="epis-sim">Sim</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="epis" name="epis" class="form-check-input" value="nao">
+                    <label class="form-check-label" for="epis-nao">Não</label>
+                </div>
+            </div>    
+            
+            <div class="col-12"></div>
+                <label for="inicio-horario" class="form-label">A aula prática iniciou no horário correspondente ao agendamento realizado no sistema?</label>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="inicio-horario" name="inicio-horario" class="form-check-input" value="sim" checked>
+                    <label class="form-check-label" for="inicio-horario-sim">Sim</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="inicio-horario" name="inicio-horario" class="form-check-input" value="nao">
+                    <label class="form-check-label" for="inicio-horario-nao">Não</label>
+                </div>
+            </div>            
+
+            <div class="col-12"></div>
+                <label for="encerramento-horario" class="form-label">A aula prática encerrou no horário previsto?</label>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="encerramento-horario" name="encerramento-horario" class="form-check-input" value="sim" checked>
+                    <label class="form-check-label" for="encerramento-horario-sim">Sim</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="encerramento-horario" name="encerramento-horario" class="form-check-input" value="nao">
+                    <label class="form-check-label" for="encerramento-horario-nao">Não</label>
+                </div>
+            </div>     
+            
+            <div class="col-12"></div>
+                <label for="intercorrencia" class="form-label">Houve alguma intercorrência durante a aula prática?</label>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="intercorrencia" name="intercorrencia" class="form-check-input" value="sim">
+                    <label class="form-check-label" for="intercorrencia-sim">Sim</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="intercorrencia" name="intercorrencia" class="form-check-input" value="nao" checked>
+                    <label class="form-check-label" for="intercorrencia-nao">Não</label>
+                </div>
+            </div>              
+
+            <div class="col-12"></div>
+                <label for="preparacao" class="form-label">O responsável técnico higienizou e preparou com antecedência o laboratório com os equipamentos e insumos necessários para a realização da aula prática?</label>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="preparacao" name="preparacao" class="form-check-input" value="sim" checked>
+                    <label class="form-check-label" for="preparacao-sim">Sim</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="preparacao" name="preparacao" class="form-check-input" value="nao">
+                    <label class="form-check-label" for="preparacao-nao">Não</label>
+                </div>
+            </div>   
+    
+            <div class="col-12">
+                <label for="resumo" class="form-label">Resumo do Experimento:</label>
+                <textarea id="resumo" name="resumo" rows="3" class="form-control"></textarea>
+            </div>
+
+            <div class="col-12">
+                <label for="desenvolvimento" class="form-label">Desenvolvimento do Experimento:</label>
+                <textarea id="desenvolvimento" name="desenvolvimento" rows="6" class="form-control"></textarea>
+            </div>
+
+            <div class="col-12">
+                <label for="conclusao" class="form-label">Conclusão do Experimento:</label>
+                <textarea id="conclusao" name="conclusao" rows="3" class="form-control"></textarea>
+            </div>
+
+            <div class="col-12">
+                <label for="imageUploadExperimento01" class="form-label">Imagem 01 - Experimento</label>
+                <input type="file" class="form-control" id="imageUploadExperimento01" accept="image/*">
+            </div>
+
+            <div class="col-12">
+                <label for="imageUploadExperimento02" class="form-label">Imagem 02 - Experimento</label>
+                <input type="file" class="form-control" id="imageUploadExperimento02" accept="image/*">
+            </div>
+
+            <div class="col-12 text-center">
+                <button type="button" class="btn btn-primary" onclick="generatePDF()">Gerar PDF</button>
+            </div>
+        </form>
+    </div>
 
     <script>
         document.getElementById('data').value = new Date().toISOString().split('T')[0];
